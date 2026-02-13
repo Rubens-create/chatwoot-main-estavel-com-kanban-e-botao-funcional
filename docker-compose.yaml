@@ -18,11 +18,8 @@ services:
     
     entrypoint: /bin/sh
     
-    # --- MODO DE MANUTENÇÃO ---
-    # Isso mantém o container ligado para sempre, sem rodar o site.
-    command: -c "tail -f /dev/null"
-    # --------------------------
-
+    # No serviço 'rails':
+    command: -c "chmod -R +x /app/docker/entrypoints && rm -f /app/tmp/pids/server.pid && bundle exec rails s -p 3000 -b 0.0.0.0"
     volumes:
       - 'storage:/app/storage'
     depends_on:
