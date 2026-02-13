@@ -75,8 +75,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm i
 
 COPY . /app
-# CORREÇÃO DE PERMISSÃO PARA WINDOWS
-RUN chmod +x docker/entrypoints/*.sh
+# CORREÇÃO DE PERMISSÃO RECURSIVA (Pasta toda)
+RUN chmod -R +x docker/entrypoints/
 # creating a log directory so that image wont fail when RAILS_LOG_TO_STDOUT is false
 # https://github.com/chatwoot/chatwoot/issues/701
 RUN mkdir -p /app/log
