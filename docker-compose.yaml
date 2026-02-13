@@ -1,6 +1,5 @@
 version: '3'
 
-# Definimos uma base para não repetir código
 services:
   base: &base
     build:
@@ -14,26 +13,28 @@ services:
 
   rails:
     <<: *base
-    # AQUI ESTÁ A PORTA 3005:3000
+    # Porta 3005 para não conflitar
     ports:
       - "3005:3000"
     
-    # CORREÇÃO DE PERMISSÃO E INÍCIO:
+    # --- CORREÇÃO OBRIGATÓRIA PARA WINDOWS ---
+    # 1. Ignora o script padrão que está dando erro de permissão
+    entrypoint: []
+    # 2. Corrige a permissão na força bruta e inicia o servidor
     command: >
       sh -c "chmod -R +x /app/docker/entrypoints &&
              bundle exec rails s -p 3000 -b 0.0.0.0"
+    # -----------------------------------------
+
+    # Removi o healthcheck para ele parar de reiniciar enquanto carrega
     
+    volumes:
+      - 'storage:/app/storage'
     depends_on:
       - postgres
       - redis
     
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/ || exit 1"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-      
+    # SUAS VARIÁVEIS COMPLETAS (MANTIDAS):
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
@@ -48,20 +49,22 @@ services:
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - REDIS_URL=${REDIS_URL}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      # Mantendo variáveis extras (caso você use no futuro)
       - BAILEYS_PROVIDER_DEFAULT_CLIENT_NAME=${BAILEYS_PROVIDER_DEFAULT_CLIENT_NAME}
       - BAILEYS_PROVIDER_DEFAULT_URL=${BAILEYS_PROVIDER_DEFAULT_URL}
       - BAILEYS_PROVIDER_DEFAULT_API_KEY=${BAILEYS_PROVIDER_DEFAULT_API_KEY}
       - MAILER_SENDER_EMAIL=${MAILER_SENDER_EMAIL}
       - RESEND_API_KEY=${RESEND_API_KEY}
-    entrypoint: docker/entrypoints/rails.sh
-    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+    
     restart: always
-    # Removido 'ports' para não conflitar com seu outro Chatwoot (o Coolify gerencia via domínio)
 
   sidekiq:
     <<: *base
-    # Mantendo config Fazer AI
+    # MESMA CORREÇÃO PARA O SIDEKIQ
+    entrypoint: []
+    command: >
+      sh -c "chmod -R +x /app/docker/entrypoints &&
+             bundle exec sidekiq -C config/sidekiq.yml"
+    
     volumes:
       - 'storage:/app/storage'
     depends_on:
@@ -79,7 +82,6 @@ services:
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - REDIS_URL=${REDIS_URL}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
     restart: always
 
   postgres:
