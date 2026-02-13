@@ -16,13 +16,15 @@ services:
     ports:
       - "3005:3000"
     
-    # --- CORREÇÃO DE SINTAXE E PERMISSÃO ---
-    # Substituímos o entrypoint antigo pelo Shell do Linux
     entrypoint: /bin/sh
-    # E passamos os comandos como argumento para o Shell
-    command: -c "chmod -R +x /app/docker/entrypoints && bundle exec rails s -p 3000 -b 0.0.0.0"
-    # ---------------------------------------
-
+    # AQUI ESTÁ A CORREÇÃO (rm -f ...):
+    # 1. Corrige permissão
+    # 2. Apaga o arquivo PID velho que impede o servidor de ligar
+    # 3. Inicia o servidor
+    command: -c "chmod -R +x /app/docker/entrypoints && 
+                 rm -f /app/tmp/pids/server.pid && 
+                 bundle exec rails s -p 3000 -b 0.0.0.0"
+    
     volumes:
       - 'storage:/app/storage'
     depends_on:
@@ -53,10 +55,9 @@ services:
 
   sidekiq:
     <<: *base
-    # --- MESMA CORREÇÃO PARA O SIDEKIQ ---
     entrypoint: /bin/sh
+    # Sidekiq não precisa limpar PID, mas precisa do chmod
     command: -c "chmod -R +x /app/docker/entrypoints && bundle exec sidekiq -C config/sidekiq.yml"
-    # -------------------------------------
     
     volumes:
       - 'storage:/app/storage'
