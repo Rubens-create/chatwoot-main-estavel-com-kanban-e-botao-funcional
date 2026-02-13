@@ -13,28 +13,22 @@ services:
 
   rails:
     <<: *base
-    # Porta 3005 para não conflitar
     ports:
       - "3005:3000"
     
-    # --- CORREÇÃO OBRIGATÓRIA PARA WINDOWS ---
-    # 1. Ignora o script padrão que está dando erro de permissão
-    entrypoint: []
-    # 2. Corrige a permissão na força bruta e inicia o servidor
-    command: >
-      sh -c "chmod -R +x /app/docker/entrypoints &&
-             bundle exec rails s -p 3000 -b 0.0.0.0"
-    # -----------------------------------------
+    # --- CORREÇÃO DE SINTAXE E PERMISSÃO ---
+    # Substituímos o entrypoint antigo pelo Shell do Linux
+    entrypoint: /bin/sh
+    # E passamos os comandos como argumento para o Shell
+    command: -c "chmod -R +x /app/docker/entrypoints && bundle exec rails s -p 3000 -b 0.0.0.0"
+    # ---------------------------------------
 
-    # Removi o healthcheck para ele parar de reiniciar enquanto carrega
-    
     volumes:
       - 'storage:/app/storage'
     depends_on:
       - postgres
       - redis
     
-    # SUAS VARIÁVEIS COMPLETAS (MANTIDAS):
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
@@ -59,11 +53,10 @@ services:
 
   sidekiq:
     <<: *base
-    # MESMA CORREÇÃO PARA O SIDEKIQ
-    entrypoint: []
-    command: >
-      sh -c "chmod -R +x /app/docker/entrypoints &&
-             bundle exec sidekiq -C config/sidekiq.yml"
+    # --- MESMA CORREÇÃO PARA O SIDEKIQ ---
+    entrypoint: /bin/sh
+    command: -c "chmod -R +x /app/docker/entrypoints && bundle exec sidekiq -C config/sidekiq.yml"
+    # -------------------------------------
     
     volumes:
       - 'storage:/app/storage'
