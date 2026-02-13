@@ -1,119 +1,103 @@
 version: '3'
 
+# Definimos uma base para não repetir código
 services:
   base: &base
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: docker/Dockerfile
       args:
-        BUNDLE_WITHOUT: ''
-        EXECJS_RUNTIME: 'Node'
-        RAILS_ENV: 'development'
-        RAILS_SERVE_STATIC_FILES: 'false'
-    tty: true
-    stdin_open: true
-    image: chatwoot:development
+        RAILS_ENV: production
+        NODE_ENV: production
+    image: chatwoot-custom:latest
     env_file: .env
 
   rails:
     <<: *base
-    build:
-      context: .
-      dockerfile: ./docker/dockerfiles/rails.Dockerfile
-    image: chatwoot-rails:development
+    # Mantendo as configurações da Fazer AI que você queria
     volumes:
-      - ./:/app:delegated
-      - node_modules:/app/node_modules
-      - packs:/app/public/packs
-      - cache:/app/tmp/cache
-      - bundle:/usr/local/bundle
+      - 'storage:/app/storage'
     depends_on:
       - postgres
       - redis
-      - vite
-      - mailhog
-      - sidekiq
-    ports:
-      - 3005:3000
-    env_file: .env
     environment:
-      - VITE_DEV_SERVER_HOST=vite
-      - NODE_ENV=development
-      - RAILS_ENV=development
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+      - DEFAULT_LOCALE=pt_BR
+      - FRONTEND_URL=${FRONTEND_URL}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DB:-chatwoot_production}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      # Mantendo variáveis extras (caso você use no futuro)
+      - BAILEYS_PROVIDER_DEFAULT_CLIENT_NAME=${BAILEYS_PROVIDER_DEFAULT_CLIENT_NAME}
+      - BAILEYS_PROVIDER_DEFAULT_URL=${BAILEYS_PROVIDER_DEFAULT_URL}
+      - BAILEYS_PROVIDER_DEFAULT_API_KEY=${BAILEYS_PROVIDER_DEFAULT_API_KEY}
+      - MAILER_SENDER_EMAIL=${MAILER_SENDER_EMAIL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     entrypoint: docker/entrypoints/rails.sh
-    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+    command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
+    restart: always
+    # Removido 'ports' para não conflitar com seu outro Chatwoot (o Coolify gerencia via domínio)
 
   sidekiq:
     <<: *base
-    image: chatwoot-rails:development
+    # Mantendo config Fazer AI
     volumes:
-      - ./:/app:delegated
-      - node_modules:/app/node_modules
-      - packs:/app/public/packs
-      - cache:/app/tmp/cache
-      - bundle:/usr/local/bundle
+      - 'storage:/app/storage'
     depends_on:
       - postgres
       - redis
-      - mailhog
     environment:
-      - NODE_ENV=development
-      - RAILS_ENV=development
-    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
-
-  vite:
-    <<: *base
-    build:
-      context: .
-      dockerfile: ./docker/dockerfiles/vite.Dockerfile
-    image: chatwoot-vite:development
-    volumes:
-      - ./:/app:delegated
-      - node_modules:/app/node_modules
-      - packs:/app/public/packs
-      - cache:/app/tmp/cache
-      - bundle:/usr/local/bundle
-    ports:
-      - "3036:3036" # Vite dev server
-    environment:
-      - VITE_DEV_SERVER_HOST=0.0.0.0
-      - NODE_ENV=development
-      - RAILS_ENV=development
-    entrypoint: docker/entrypoints/vite.sh
-    command: bin/vite dev
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DB:-chatwoot_production}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    restart: always
 
   postgres:
-    image: pgvector/pgvector:pg16
+    image: 'pgvector/pgvector:pg16'
     restart: always
-    ports:
-      - '5432:5432'
     volumes:
-      - postgres:/data/postgres
+      - 'postgres:/var/lib/postgresql/data'
     environment:
-      - POSTGRES_DB=chatwoot
-      - POSTGRES_USER=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-chatwoot_production}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:alpine
+    image: 'redis:alpine'
     restart: always
     command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
-    env_file: .env
     volumes:
-      - redis:/data/redis
-    ports:
-      - '6379:6379'
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - 1025:1025
-      - 8025:8025
+      - 'redis:/data'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
+  storage:
   postgres:
   redis:
-  packs:
-  node_modules:
-  cache:
-  bundle:
