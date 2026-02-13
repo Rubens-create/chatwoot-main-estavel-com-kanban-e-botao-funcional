@@ -17,6 +17,9 @@ services:
     # Mantendo as configurações da Fazer AI que você queria
     volumes:
       - 'storage:/app/storage'
+    command: >
+      sh -c "chmod -R +x /app/docker/entrypoints &&
+             bundle exec rails s -p 3000 -b 0.0.0.0"
     depends_on:
       - postgres
       - redis
