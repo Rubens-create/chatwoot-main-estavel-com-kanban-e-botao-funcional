@@ -2,7 +2,7 @@ version: '3'
 
 services:
   rails:
-    image: 'ghcr.io/Rubens-create/chatwoot-main-estavel-com-kanban-e-botao-funcional:latest'
+    image: 'ghcr.io/rubens-create/chatwoot-main-estavel-com-kanban-e-botao-funcional:latest'
     pull_policy: always
     ports:
       - "3005:3000"
