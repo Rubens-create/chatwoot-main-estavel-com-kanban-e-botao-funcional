@@ -59,7 +59,7 @@ services:
       retries: 20
 
   sidekiq:
-    image: 'ghcr.io/SEU-USUARIO/SEU-REPO:latest'
+    image: 'ghcr.io/rubens-create/chatwoot-main-estavel-com-kanban-e-botao-funcional:latest'
     pull_policy: always
     volumes:
       - 'storage:/app/storage'
