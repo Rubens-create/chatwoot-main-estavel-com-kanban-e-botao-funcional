@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm64   # <-- runner ARM nativo
 
     permissions:
       contents: read
@@ -23,9 +23,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -39,7 +36,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          platforms: linux/arm64
+          # Sem platforms — já está rodando em ARM nativo
           tags: |
             ghcr.io/${{ steps.repo.outputs.name }}:latest
             ghcr.io/${{ steps.repo.outputs.name }}:${{ github.sha }}
