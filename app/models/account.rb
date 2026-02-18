@@ -141,6 +141,7 @@ class Account < ApplicationRecord
 
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
+  after_create :setup_default_attributes
   after_destroy :remove_account_sequences
 
   def agents
@@ -214,6 +215,29 @@ class Account < ApplicationRecord
     ActiveRecord::Base.connection.exec_query("drop sequence IF EXISTS camp_dpid_seq_#{id}")
     ActiveRecord::Base.connection.exec_query("drop sequence IF EXISTS conv_dpid_seq_#{id}")
   end
+    def setup_default_attributes
+    # Kanban (Conversa / Lista)
+    unless custom_attribute_definitions.exists?(attribute_key: 'status_kanban')
+      custom_attribute_definitions.create(
+        attribute_display_name: 'Status Kanban',
+        attribute_key: 'status_kanban',
+        attribute_model: 0, # conversation_attribute
+        attribute_display_type: 6, # list
+        attribute_values: ['Novo', 'Em Atendimento', 'Resolvido', 'Pendente']
+      )
+    end
+
+    # Bot (Contato / Checkbox)
+    unless custom_attribute_definitions.exists?(attribute_key: 'bot_ativo')
+      custom_attribute_definitions.create(
+        attribute_display_name: 'Bot Ativo',
+        attribute_key: 'bot_ativo',
+        attribute_model: 1, # contact_attribute
+        attribute_display_type: 4 # checkbox
+      )
+    end
+  end
+  
 end
 
 Account.prepend_mod_with('Account')
