@@ -6,7 +6,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04-arm64   # <-- runner ARM nativo
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
 
     permissions:
       contents: read
@@ -23,6 +24,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -32,11 +36,12 @@ jobs:
 
       - name: Build e Push
         uses: docker/build-push-action@v5
+        timeout-minutes: 300
         with:
           context: .
           file: docker/Dockerfile
           push: true
-          # Sem platforms — já está rodando em ARM nativo
+          platforms: linux/arm64
           tags: |
             ghcr.io/${{ steps.repo.outputs.name }}:latest
             ghcr.io/${{ steps.repo.outputs.name }}:${{ github.sha }}
