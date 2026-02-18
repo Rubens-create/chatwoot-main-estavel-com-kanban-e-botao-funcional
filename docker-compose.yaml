@@ -8,7 +8,6 @@ services:
       - "3005:3000"
     volumes:
       - 'storage:/app/storage'
-      - './docker/entrypoints/rails.sh:/app/docker/entrypoints/rails.sh'
     depends_on:
       - postgres
       - redis
