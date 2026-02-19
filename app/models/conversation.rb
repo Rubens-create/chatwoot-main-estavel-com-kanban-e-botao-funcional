@@ -219,6 +219,7 @@ class Conversation < ApplicationRecord
     notify_status_change
     create_activity
     notify_conversation_updation
+    sync_labels_to_contact
   end
 
   def handle_resolved_status_change
@@ -326,6 +327,14 @@ class Conversation < ApplicationRecord
 
     create_label_added(user_name, current_labels - previous_labels)
     create_label_removed(user_name, previous_labels - current_labels)
+  end
+
+  # Sincroniza labels da conversa para o contato de forma assíncrona.
+  # Só dispara quando label_list foi efetivamente alterado neste save.
+  def sync_labels_to_contact
+    return unless saved_change_to_label_list?
+
+    Contacts::SyncLabelsFromConversationJob.perform_later(id)
   end
 
   def validate_referer_url
