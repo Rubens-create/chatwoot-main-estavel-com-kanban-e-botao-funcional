@@ -6,6 +6,19 @@ import draggable from 'vuedraggable';
 import Avatar from 'next/avatar/Avatar.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 
+// ─── Labels Helpers ───────────────────────────────────────────────────────────
+// Calcula a cor de texto (preto ou branco) com base na luminância do fundo
+const getContrastColor = (hexColor) => {
+  if (!hexColor) return '#000000';
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // Fórmula de luminância perceptiva
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
+};
+
 const COLUMNS_DEFAULT = ['New'];
 
 const store = useStore();
@@ -15,6 +28,32 @@ const { t } = useI18n();
 const contacts = computed(() => {
   return store.getters['contacts/getContacts'] || [];
 });
+
+// Store de definições de labels (com cor, título, etc.)
+const allLabels = computed(() => {
+  return store.getters['labels/getLabels'] || [];
+});
+
+// Mapa rápido: título (lowercase) → objeto label {color, title}
+const labelsMap = computed(() => {
+  const map = {};
+  allLabels.value.forEach(label => {
+    map[label.title.toLowerCase()] = label;
+  });
+  return map;
+});
+
+// Retorna as labels de um contato com as cores resolvidas
+const getContactLabels = (contactId) => {
+  const labelNames = store.getters['contactLabels/getContactLabels'](contactId) || [];
+  return labelNames.slice(0, 4).map(name => {
+    const definition = labelsMap.value[name.toLowerCase()] || {};
+    return {
+      title: definition.title || name,
+      color: definition.color || '#64748b',
+    };
+  });
+};
 
 const uiFlags = computed(() => {
   return store.getters['contacts/getUIFlags'] || { isFetching: false, isFetchingItem: false };
@@ -84,7 +123,15 @@ watch([contacts, kanbanColumns], syncContactsToColumns, { deep: true, immediate:
 onMounted(() => {
   store.dispatch('contacts/get');
   store.dispatch('attributes/get');
+  store.dispatch('labels/get');
 });
+
+// Carrega labels de cada contato quando a lista de contatos mudar
+watch(contacts, (newContacts) => {
+  newContacts.forEach(contact => {
+    store.dispatch('contactLabels/get', contact.id);
+  });
+}, { immediate: true });
 
 const onDragChange = (event, column) => {
   if (event.added) {
@@ -182,7 +229,7 @@ const addColumn = async () => {
                     size="32"
                     rounded-full
                   />
-                  <div class="flex flex-col min-w-0">
+                  <div class="flex flex-col min-w-0 gap-1">
                     <span class="text-sm font-medium text-n-slate-12 truncate block">
                       {{ element.name }}
                     </span>
@@ -192,6 +239,31 @@ const addColumn = async () => {
                     <span v-if="element.phone_number" class="text-xs text-n-slate-10 truncate block">
                       {{ element.phone_number }}
                     </span>
+
+                    <!-- Labels / Etiquetas do Contato -->
+                    <div
+                      v-if="getContactLabels(element.id).length > 0"
+                      class="flex flex-wrap gap-1 mt-1"
+                    >
+                      <span
+                        v-for="label in getContactLabels(element.id).slice(0, 3)"
+                        :key="label.title"
+                        class="label-badge"
+                        :style="{
+                          backgroundColor: label.color,
+                          color: getContrastColor(label.color),
+                        }"
+                      >
+                        {{ label.title }}
+                      </span>
+                      <!-- Contador de labels excedentes -->
+                      <span
+                        v-if="getContactLabels(element.id).length > 3"
+                        class="label-badge label-badge--extra"
+                      >
+                        +{{ getContactLabels(element.id).length - 3 }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -232,7 +304,7 @@ const addColumn = async () => {
 </template>
 
 <style scoped>
-/* Custom scrollbar styling if needed, or rely on Tailwind/Global styles */
+/* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -243,5 +315,25 @@ const addColumn = async () => {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: var(--n-slate-6);
   border-radius: 3px;
+}
+
+/* Labels / Etiquetas */
+.label-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.label-badge--extra {
+  background-color: var(--n-slate-4, #e2e8f0);
+  color: var(--n-slate-11, #475569);
 }
 </style>
