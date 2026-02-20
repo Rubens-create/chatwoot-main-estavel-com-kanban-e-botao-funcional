@@ -74,9 +74,6 @@
       (function() {
         var c = localStorage.getItem('chatwoot_theme_color');
         if (c) {
-          document.documentElement.style.setProperty('--color-woot', c);
-          document.documentElement.style.setProperty('--color-primary', c);
-          
           try {
             // hex to rgb
             var hex = c.replace('#', '');
@@ -88,38 +85,22 @@
             // luminance
             var lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
             var textColor = lum > 0.5 ? '#000000' : '#ffffff';
-            document.documentElement.style.setProperty('--w-text-on-primary', textColor);
-            
-            // HSL converter para aplicar as demais vars
-            var max = Math.max(r, g, b), min = Math.min(r, g, b);
-            var h, s, l = (max + min) / 2;
-            if(max == min){
-                h = s = 0; // achromatic
-            } else {
-                var d = max - min;
-                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                switch(max) {
-                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                    case g: h = (b - r) / d + 2; break;
-                    case b: h = (r - g) / d + 4; break;
-                }
-                h /= 6;
-            }
-            h = Math.round(h * 360);
-            s = Math.round(s * 100);
-            var isLight = l > 0.6; // se for muito claro, sature um pouco mais nas partes escuras
-            
-            var lightnessMap = {
-              '25': 97, '50': 95, '75': 90, '100': 85,
-              '200': 75, '300': 65, '400': 55, '500': Math.round(l * 100),
-              '600': isLight ? 40 : 45, '700': isLight ? 30 : 35, '800': isLight ? 20 : 25, '900': isLight ? 10 : 15
-            };
-            
+            // Build style string
+            var styleStr = '';
+            styleStr += '--w-text-on-primary: ' + textColor + ' !important;';
+            styleStr += '--color-woot: ' + c + ' !important;';
+            styleStr += '--color-primary: ' + c + ' !important;';
+
             Object.keys(lightnessMap).forEach(function(key) {
               var light = lightnessMap[key];
               var sat = key >= 600 && isLight ? Math.min(100, s + 20) : s;
-              document.documentElement.style.setProperty('--w-' + key, 'hsl(' + h + ', ' + sat + '%, ' + light + '%)');
+              styleStr += '--w-' + key + ': hsl(' + h + ', ' + sat + '%, ' + light + '%) !important;';
             });
+
+            var styleEl = document.createElement('style');
+            styleEl.id = 'custom-theme-colors-boot';
+            styleEl.textContent = ':root, [data-theme="light"], [data-theme="dark"], .dark, .light { ' + styleStr + ' }';
+            document.head.appendChild(styleEl);
           } catch(e) {}
         }
       })();

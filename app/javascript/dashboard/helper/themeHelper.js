@@ -100,6 +100,7 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
   const palette = generatePalette(hex);
   const root = document.documentElement;
 
+  // We are persisting in the system DOM as standard properties
   root.style.setProperty('--color-woot', palette.primary);
   root.style.setProperty('--color-primary', palette.primary);
   root.style.setProperty('--w-text-on-primary', palette.textOnPrimary);
@@ -110,7 +111,42 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     }
   });
 
+  // Create a high-specificity style tag to override any nested theme configurations like [data-theme]
+  let styleEl = document.getElementById('custom-theme-colors');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'custom-theme-colors';
+    document.head.appendChild(styleEl);
+  }
+
+  styleEl.textContent = `
+    :root,
+    :root[data-theme="light"],
+    :root[data-theme="dark"],
+    [data-theme="light"],
+    [data-theme="dark"],
+    .dark,
+    .light {
+      --w-25: ${palette[25]} !important;
+      --w-50: ${palette[50]} !important;
+      --w-75: ${palette[75]} !important;
+      --w-100: ${palette[100]} !important;
+      --w-200: ${palette[200]} !important;
+      --w-300: ${palette[300]} !important;
+      --w-400: ${palette[400]} !important;
+      --w-500: ${palette[500]} !important;
+      --w-600: ${palette[600]} !important;
+      --w-700: ${palette[700]} !important;
+      --w-800: ${palette[800]} !important;
+      --w-900: ${palette[900]} !important;
+      --color-woot: ${palette.primary} !important;
+      --color-primary: ${palette.primary} !important;
+      --w-text-on-primary: ${palette.textOnPrimary} !important;
+    }
+  `;
+
   if (saveToLocal) {
     localStorage.setItem('chatwoot_theme_color', palette.primary);
   }
 };
+
