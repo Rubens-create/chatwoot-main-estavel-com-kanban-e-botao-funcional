@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import getUuid from 'widget/helpers/uuid';
 import { ref, onMounted, onUnmounted, defineEmits, defineExpose } from 'vue';
 import WaveSurfer from 'wavesurfer.js';
@@ -38,7 +38,7 @@ const formatTimeProgress = time => {
 const initWaveSurfer = () => {
   wavesurfer.value = WaveSurfer.create({
     container: waveformContainer.value,
-    waveColor: '#1F93FF',
+    waveColor: '#FFCC00',
     progressColor: '#6E6F73',
     height: 100,
     barWidth: 2,

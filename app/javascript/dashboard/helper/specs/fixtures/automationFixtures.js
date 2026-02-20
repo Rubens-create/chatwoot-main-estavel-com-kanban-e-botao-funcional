@@ -1,4 +1,4 @@
-import allLanguages from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
+﻿import allLanguages from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
 
 import allCountries from 'shared/constants/countries.js';
 
@@ -467,7 +467,7 @@ export const inboxes = [
     timezone: 'America/Los_Angeles',
     callback_webhook_url: null,
     allow_messages_after_resolved: true,
-    widget_color: '#1f93ff',
+    widget_color: '#ffcc00',
     website_url: 'https://acme.inc',
     hmac_mandatory: false,
     welcome_title: '',

@@ -1,4 +1,4 @@
-# == Schema Information
+﻿# == Schema Information
 #
 # Table name: channel_web_widgets
 #
@@ -15,7 +15,7 @@
 #  website_url           :string
 #  welcome_tagline       :string
 #  welcome_title         :string
-#  widget_color          :string           default("#1f93ff")
+#  widget_color          :string           default("#ffcc00")
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  account_id            :integer

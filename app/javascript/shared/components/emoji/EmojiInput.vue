@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import emojis from './emojisGroup.json';
 import FluentIcon from 'shared/components/FluentIcon/Index.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
@@ -197,7 +197,7 @@ export default {
 @layer components {
   .box-shadow-blue {
     box-shadow:
-      0 0 0 1px #1f93ff,
+      0 0 0 1px #ffcc00,
       0 0 1px 2px #c7e3ff;
   }
 

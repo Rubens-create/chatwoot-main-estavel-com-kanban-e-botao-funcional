@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { computed } from 'vue';
 import BarChart from 'shared/components/charts/BarChart.vue';
 const props = defineProps({
@@ -20,7 +20,7 @@ const prepareData = sourceData => {
     datasets: [
       {
         type: 'bar',
-        backgroundColor: 'rgb(31, 147, 255)',
+        backgroundColor: 'rgb(255, 204, 0)',
         yAxisID: 'y',
         label: 'Conversations',
         data: data,

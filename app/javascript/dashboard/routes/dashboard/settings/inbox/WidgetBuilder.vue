@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import Widget from 'dashboard/modules/widget-preview/components/Widget.vue';
@@ -31,7 +31,7 @@ export default {
   data() {
     return {
       isWidgetPreview: true,
-      color: '#1f93ff',
+      color: '#ffcc00',
       websiteName: '',
       welcomeHeading: '',
       welcomeTagline: '',

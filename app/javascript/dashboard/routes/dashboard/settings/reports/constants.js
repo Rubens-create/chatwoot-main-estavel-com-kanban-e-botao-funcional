@@ -1,4 +1,4 @@
-export const formatTime = timeInSeconds => {
+﻿export const formatTime = timeInSeconds => {
   if (!timeInSeconds) {
     return '';
   }
@@ -111,7 +111,7 @@ export const DEFAULT_LINE_CHART = {
 
 export const DEFAULT_BAR_CHART = {
   type: 'bar',
-  backgroundColor: 'rgb(31, 147, 255)',
+  backgroundColor: 'rgb(255, 204, 0)',
 };
 
 const createChartConfig = yAxisTickCallback => ({

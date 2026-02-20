@@ -1,4 +1,4 @@
-import { defineConfig } from 'histoire';
+﻿import { defineConfig } from 'histoire';
 import { HstVue } from '@histoire/plugin-vue';
 
 export default defineConfig({
@@ -22,7 +22,7 @@ export default defineConfig({
   },
   defaultStoryProps: {
     icon: 'carbon:cube',
-    iconColor: '#1F93FF',
+    iconColor: '#FFCC00',
     layout: {
       type: 'grid',
       width: '80%',

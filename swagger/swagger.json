@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.4",
   "info": {
     "title": "Chatwoot",
@@ -3915,7 +3915,7 @@
                   "payload": [
                     {
                       "id": 4,
-                      "color": "#1F93FF",
+                      "color": "#FFCC00",
                       "custom_domain": "chatwoot.help",
                       "header_text": "Handbook",
                       "homepage_link": "https://www.chatwoot.com",
@@ -3940,7 +3940,7 @@
                         "name": "Chatwoot",
                         "channel_type": "Channel::WebWidget",
                         "greeting_enabled": true,
-                        "widget_color": "#1F93FF",
+                        "widget_color": "#FFCC00",
                         "website_url": "chatwoot.com"
                       },
                       "logo": {
@@ -4027,7 +4027,7 @@
                   "payload": {
                     "id": 123,
                     "archived": false,
-                    "color": "#1F93FF",
+                    "color": "#FFCC00",
                     "config": {
                       "allowed_locales": [
                         {
@@ -4050,7 +4050,7 @@
                       "website_url": "chatwoot.com",
                       "channel_type": "Channel::WebWidget",
                       "avatar_url": "https://example.com/avatar.png",
-                      "widget_color": "#1F93FF",
+                      "widget_color": "#FFCC00",
                       "website_token": "4cWzuf9i9jxN9tbnv8K9STKU",
                       "enable_auto_assignment": true,
                       "web_widget_script": "<script>...</script>",
