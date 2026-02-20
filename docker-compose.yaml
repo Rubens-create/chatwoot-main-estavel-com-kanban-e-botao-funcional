@@ -12,15 +12,11 @@ services:
       - postgres
       - redis
     entrypoint: docker/entrypoints/rails.sh
-    command:
-      - bundle
-      - exec
-      - rails
-      - s
-      - '-p'
-      - '3000'
-      - '-b'
-      - 0.0.0.0
+    # CORRIGIDO: Removemos as linhas soltas abaixo da string de comando
+    command: 
+      - sh
+      - '-c'
+      - 'mkdir -p /app/storage && chmod -R 777 /app/storage && bundle exec rails s -p 3000 -b 0.0.0.0'
     post_start:
       - command:
         - sh
@@ -86,12 +82,11 @@ services:
       - BAILEYS_PROVIDER_USE_INTERNAL_HOST_URL=true
       - MAILER_SENDER_EMAIL=${MAILER_SENDER_EMAIL}
       - RESEND_API_KEY=${RESEND_API_KEY}
+    # CORRIGIDO: Removemos as linhas soltas aqui também
     command:
-      - bundle
-      - exec
-      - sidekiq
-      - '-C'
-      - config/sidekiq.yml
+      - sh
+      - '-c'
+      - 'mkdir -p /app/storage && chmod -R 777 /app/storage && bundle exec sidekiq -C config/sidekiq.yml'
     restart: always
     healthcheck:
       test:
