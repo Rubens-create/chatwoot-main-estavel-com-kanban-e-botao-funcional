@@ -145,8 +145,12 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     }
   `;
 
+  console.log('[THEME/DEBUG] Injected Style Element:', styleEl.textContent);
+  setTimeout(() => {
+    console.log('[THEME/DEBUG] Computed --w-500 exists:', getComputedStyle(document.documentElement).getPropertyValue('--w-500'));
+  }, 500);
+
   if (saveToLocal) {
     localStorage.setItem('chatwoot_theme_color', palette.primary);
   }
 };
-
