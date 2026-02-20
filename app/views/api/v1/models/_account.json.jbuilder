@@ -24,4 +24,5 @@ json.locale @account.locale
 json.name @account.name
 json.support_email @account.support_email
 json.status @account.status
+json.theme_color @account.theme_color
 json.cache_keys @account.cache_keys

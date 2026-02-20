@@ -22,6 +22,7 @@ import { useRouter } from 'vue-router';
 import { useAvailability } from 'widget/composables/useAvailability';
 import { SDK_SET_BUBBLE_VISIBILITY } from '../shared/constants/sharedFrameEvents';
 import { emitter } from 'shared/helpers/mitt';
+import { applyThemeColor } from 'dashboard/helper/themeHelper';
 
 export default {
   name: 'App',
@@ -79,10 +80,13 @@ export default {
     },
   },
   mounted() {
-    const { websiteToken, locale, widgetColor } = window.chatwootWebChannel;
+    const { websiteToken, locale, widgetColor, themeColor } = window.chatwootWebChannel;
     this.setLocale(locale);
-    this.setWidgetColor(widgetColor);
-    this.setWidgetColorVariable(widgetColor);
+    
+    // priority: widgetColor from inbox > themeColor from account > default Chatwoot Yellow
+    const finalColor = widgetColor || themeColor || '#1F93FF';
+    this.setWidgetColor(finalColor);
+    this.setWidgetColorVariable(finalColor);
     setHeader(window.authToken);
     if (this.isIFrame) {
       this.registerListeners();
@@ -121,6 +125,8 @@ export default {
           '--widget-color',
           widgetColor
         );
+        // Apply full palette to the widget DOM, passing `false` to avoid overwriting dashboard's localStorage
+        applyThemeColor(widgetColor, false);
       }
     },
     scrollConversationToBottom() {

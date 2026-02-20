@@ -17,6 +17,7 @@ import AccountDelete from './components/AccountDelete.vue';
 import AutoResolve from './components/AutoResolve.vue';
 import AudioTranscription from './components/AudioTranscription.vue';
 import SectionLayout from './components/SectionLayout.vue';
+import ThemeColorPicker from './components/ThemeColorPicker.vue';
 
 export default {
   components: {
@@ -28,6 +29,7 @@ export default {
     AutoResolve,
     AudioTranscription,
     SectionLayout,
+    ThemeColorPicker,
     WithLabel,
     NextInput,
   },
@@ -239,6 +241,7 @@ export default {
 
       <woot-loading-state v-if="uiFlags.isFetchingItem" />
     </div>
+    <ThemeColorPicker :account-id="accountId" />
     <AutoResolve v-if="showAutoResolutionConfig" />
     <AudioTranscription v-if="showAudioTranscriptionConfig" />
     <AccountId />

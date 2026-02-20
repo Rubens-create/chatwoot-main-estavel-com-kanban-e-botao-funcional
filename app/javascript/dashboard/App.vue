@@ -9,7 +9,7 @@ import vueActionCable from './helper/actionCable';
 import { useRouter } from 'vue-router';
 import { useStore } from 'dashboard/composables/store';
 import WootSnackbarBox from './components/SnackbarContainer.vue';
-import { setColorTheme } from './helper/themeHelper';
+import { setColorTheme, applyThemeColor } from './helper/themeHelper';
 import { isOnOnboardingView } from 'v3/helpers/RouteHelper';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useFontSize } from 'dashboard/composables/useFontSize';
@@ -105,11 +105,14 @@ export default {
       this.$store.dispatch('setActiveAccount', {
         accountId: this.currentAccountId,
       });
-      const { locale, latest_chatwoot_version: latestChatwootVersion } =
+      const { locale, latest_chatwoot_version: latestChatwootVersion, theme_color: themeColor } =
         this.getAccount(this.currentAccountId);
       const { pubsub_token: pubsubToken } = this.currentUser || {};
       // If user locale is set, use it; otherwise use account locale
       this.setLocale(this.uiSettings?.locale || locale);
+      if (themeColor) {
+        applyThemeColor(themeColor);
+      }
       this.latestChatwootVersion = latestChatwootVersion;
       vueActionCable.init(this.store, pubsubToken);
       this.reconnectService = new ReconnectService(this.store, this.router);
