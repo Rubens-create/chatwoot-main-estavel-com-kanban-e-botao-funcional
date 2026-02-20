@@ -93,8 +93,8 @@ RUN echo "versao-zip-custom" > /app/.git_sha
 # Remove unnecessary files
 RUN rm -rf /gems/ruby/3.4.0/cache/*.gem \
   && find /gems/ruby/3.4.0/gems/ \( -name "*.c" -o -name "*.o" \) -delete \
-  && rm -rf .git \
-  && rm .gitignore
+  && rm -rf .git || true \
+  && rm -f .gitignore
 
 # final build stage
 FROM ruby:3.4.4-alpine3.21
