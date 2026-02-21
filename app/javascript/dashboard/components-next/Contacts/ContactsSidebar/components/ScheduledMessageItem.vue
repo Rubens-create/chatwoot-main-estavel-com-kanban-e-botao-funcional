@@ -46,7 +46,7 @@ const statusConfig = {
   },
   pending: {
     labelKey: 'SCHEDULED_MESSAGES.STATUS.PENDING',
-    class: 'bg-n-brand/10 text-n-blue-text',
+    class: 'bg-n-brand text-n-blue-text',
   },
   sent: {
     labelKey: 'SCHEDULED_MESSAGES.STATUS.SENT',
