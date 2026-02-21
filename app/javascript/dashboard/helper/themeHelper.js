@@ -119,8 +119,15 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     document.head.appendChild(styleEl);
   }
 
-  // Calculate RGB values for rgba() override injections
-  const rgbValue = `${parseInt(hex.substring(0, 2), 16)}, ${parseInt(hex.substring(2, 4), 16)}, ${parseInt(hex.substring(4, 6), 16)}`;
+  // Calculate RGB values for rgba() override injections with safety checks
+  let cleanHex = hex ? String(hex).replace('#', '') : '1F93FF'; // Default to Woot Blue
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split('').map(char => char + char).join('');
+  }
+  const r = parseInt(cleanHex.substring(0, 2), 16) || 31;
+  const g = parseInt(cleanHex.substring(2, 4), 16) || 147;
+  const b = parseInt(cleanHex.substring(4, 6), 16) || 255;
+  const rgbValue = `${r}, ${g}, ${b}`;
 
   styleEl.textContent = `
     :root,
@@ -150,7 +157,7 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     /* Message Bubbles */
     .bg-n-solid-blue {
       background-color: rgb(${rgbValue}) !important;
-      color: ${palette.textOnPrimary} !important;
+      color: #ffffff !important;
     }
 
     /* Active Links / Text */
