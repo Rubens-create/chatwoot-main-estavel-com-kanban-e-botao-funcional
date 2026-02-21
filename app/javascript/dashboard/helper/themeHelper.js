@@ -150,7 +150,7 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     /* Message Bubbles */
     .bg-n-solid-blue {
       background-color: rgb(${rgbValue}) !important;
-      color: #fff !important;
+      color: ${palette.textOnPrimary} !important;
     }
 
     /* Active Links / Text */
