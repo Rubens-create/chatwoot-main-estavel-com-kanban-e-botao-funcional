@@ -119,6 +119,9 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     document.head.appendChild(styleEl);
   }
 
+  // Calculate RGB values for rgba() override injections
+  const rgbValue = `${parseInt(hex.substring(0, 2), 16)}, ${parseInt(hex.substring(2, 4), 16)}, ${parseInt(hex.substring(4, 6), 16)}`;
+
   styleEl.textContent = `
     :root,
     :root[data-theme="light"],
@@ -142,6 +145,22 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
       --color-woot: ${palette.primary} !important;
       --color-primary: ${palette.primary} !important;
       --w-text-on-primary: ${palette.textOnPrimary} !important;
+    }
+
+    /* Message Bubbles */
+    .bg-n-solid-blue {
+      background-color: rgb(${rgbValue}) !important;
+      color: #fff !important;
+    }
+
+    /* Active Links / Text */
+    .text-n-blue-text, .text-woot-500 {
+      color: rgb(${rgbValue}) !important;
+    }
+
+    /* Active Menu Backgrounds */
+    .bg-n-alpha-1, .bg-n-alpha-2, .bg-n-solid-blue\\/10 {
+      background-color: rgba(${rgbValue}, 0.1) !important;
     }
   `;
 
