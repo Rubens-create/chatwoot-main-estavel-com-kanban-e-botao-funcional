@@ -211,7 +211,19 @@ export const colors = {
     },
 
     black: '#000000',
-    brand: '#2781F6',
+    brand: {
+      DEFAULT: 'var(--color-woot, #1F93FF)',
+      50: 'var(--w-50, #1F93FF)',
+      100: 'var(--w-100, #1F93FF)',
+      200: 'var(--w-200, #1F93FF)',
+      300: 'var(--w-300, #1F93FF)',
+      400: 'var(--w-400, #1F93FF)',
+      500: 'var(--w-500, #1F93FF)',
+      600: 'var(--w-600, #1F93FF)',
+      700: 'var(--w-700, #1F93FF)',
+      800: 'var(--w-800, #1F93FF)',
+      900: 'var(--w-900, #1F93FF)',
+    },
     background: 'rgb(var(--background-color) / <alpha-value>)',
     solid: {
       1: 'rgb(var(--solid-1) / <alpha-value>)',
