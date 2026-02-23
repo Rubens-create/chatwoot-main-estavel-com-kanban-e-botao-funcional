@@ -75,27 +75,51 @@
         var c = localStorage.getItem('chatwoot_theme_color');
         if (c) {
           try {
-            // hex to rgb
             var hex = c.replace('#', '');
             if (hex.length === 3) hex = hex.split('').map(function(char) { return char + char; }).join('');
-            var r = parseInt(hex.substring(0, 2), 16) / 255;
-            var g = parseInt(hex.substring(2, 4), 16) / 255;
-            var b = parseInt(hex.substring(4, 6), 16) / 255;
+            var r = parseInt(hex.substring(0, 2), 16);
+            var g = parseInt(hex.substring(2, 4), 16);
+            var b = parseInt(hex.substring(4, 6), 16);
             
-            // luminance
-            var lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            var rf = r / 255, gf = g / 255, bf = b / 255;
+            var max = Math.max(rf, gf, bf), min = Math.min(rf, gf, bf);
+            var h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; } else {
+              var d = max - min;
+              s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+              switch (max) {
+                case rf: h = (gf - bf) / d + (gf < bf ? 6 : 0); break;
+                case gf: h = (bf - rf) / d + 2; break;
+                case bf: h = (rf - gf) / d + 4; break;
+              }
+              h /= 6;
+            }
+            h = Math.round(h * 360); s = Math.round(s * 100);
+            var isLight = l > 0.6;
+            var lightnessMap = { 25: 97, 50: 95, 75: 90, 100: 85, 200: 75, 300: 65, 400: 55, 500: Math.round(l * 100), 600: isLight ? 40 : 45, 700: isLight ? 30 : 35, 800: isLight ? 20 : 25, 900: isLight ? 10 : 15 };
+
+            var lum = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
             var textColor = lum > 0.5 ? '#000000' : '#ffffff';
-            // Build style string
+            var brandRgb = r + ' ' + g + ' ' + b;
+
             var styleStr = '';
             styleStr += '--w-text-on-primary: ' + textColor + ' !important;';
             styleStr += '--color-woot: ' + c + ' !important;';
             styleStr += '--color-primary: ' + c + ' !important;';
+            styleStr += '--brand-rgb: ' + brandRgb + ' !important;';
 
             Object.keys(lightnessMap).forEach(function(key) {
               var light = lightnessMap[key];
               var sat = key >= 600 && isLight ? Math.min(100, s + 20) : s;
               styleStr += '--w-' + key + ': hsl(' + h + ', ' + sat + '%, ' + light + '%) !important;';
             });
+
+            // Handle solid and text blue tints (simplified)
+            var solidR = Math.round(r + (255 - r) * 0.85), solidG = Math.round(g + (255 - g) * 0.85), solidB = Math.round(b + (255 - b) * 0.85);
+            var textR = Math.round(r * 0.8), textG = Math.round(g * 0.8), textB = Math.round(b * 0.8);
+            
+            styleStr += '--solid-blue: ' + solidR + ' ' + solidG + ' ' + solidB + ' !important;';
+            styleStr += '--text-blue: ' + textR + ' ' + textG + ' ' + textB + ' !important;';
 
             var styleEl = document.createElement('style');
             styleEl.id = 'custom-theme-colors-boot';

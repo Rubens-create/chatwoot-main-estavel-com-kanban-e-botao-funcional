@@ -178,6 +178,7 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
       --solid-blue: ${solidR} ${solidG} ${solidB} !important;
       --text-blue: ${textR} ${textG} ${textB} !important;
       --border-blue: ${borderR} ${borderG} ${borderB} !important;
+      --brand-rgb: ${r} ${g} ${b} !important;
     }
     :root[data-theme="dark"],
     [data-theme="dark"],
@@ -200,6 +201,7 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
       --solid-blue: ${solidDarkR} ${solidDarkG} ${solidDarkB} !important;
       --text-blue: ${textDarkR} ${textDarkG} ${textDarkB} !important;
       --border-blue: ${borderR} ${borderG} ${borderB} !important;
+      --brand-rgb: ${r} ${g} ${b} !important;
     }
   `;
 
