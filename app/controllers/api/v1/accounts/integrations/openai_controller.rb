@@ -3,8 +3,6 @@ require 'uri'
 require 'json'
 
 class Api::V1::Accounts::Integrations::OpenaiController < Api::V1::Accounts::BaseController
-  skip_after_action :verify_authorized
-
   def models
     api_key = params[:api_key]
     api_base_url = params[:api_base_url].presence || 'https://api.openai.com/v1'
