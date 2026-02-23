@@ -31,10 +31,39 @@ export default {
       isFetchingModels: false,
     };
   },
+  mounted() {
+    this.$store.dispatch('integrations/get');
+    if (this.existingHook && this.existingHook.settings) {
+      if (this.existingHook.settings.api_key) {
+        this.value = this.existingHook.settings.api_key;
+      }
+      if (this.existingHook.settings.api_base_url) {
+        this.apiBaseUrl = this.existingHook.settings.api_base_url;
+      }
+      if (this.existingHook.settings.model_name) {
+        this.modelName = this.existingHook.settings.model_name;
+        this.availableModels = [this.modelName]; // Garante que será exibido no dropdown provisoriamente
+      }
+    }
+  },
   computed: {
     ...mapGetters({
       accountId: 'getCurrentAccountId',
+      getIntegration: 'integrations/getIntegration',
     }),
+    openAIIntegration() {
+      return this.getIntegration('openai');
+    },
+    existingHook() {
+      if (
+        this.openAIIntegration &&
+        this.openAIIntegration.hooks &&
+        this.openAIIntegration.hooks.length > 0
+      ) {
+        return this.openAIIntegration.hooks[0];
+      }
+      return null;
+    },
   },
   validations: {
     value: {
@@ -98,7 +127,14 @@ export default {
           model_name: this.modelName,
         },
       };
+      // Se a conta já tiver um hook para openai, deletamos primeiro para não bater na validação de unicidade.
       try {
+        if (this.existingHook) {
+          await this.$store.dispatch('integrations/deleteHook', {
+            appId: 'openai',
+            hookId: this.existingHook.id,
+          });
+        }
         await this.$store.dispatch('integrations/createHook', payload);
         this.alertMessage = this.$t(
           'INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.SUCCESS_MESSAGE'
