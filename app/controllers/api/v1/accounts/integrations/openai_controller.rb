@@ -1,3 +1,7 @@
+require 'net/http'
+require 'uri'
+require 'json'
+
 class Api::V1::Accounts::Integrations::OpenaiController < Api::V1::Accounts::BaseController
   skip_after_action :verify_authorized
 
@@ -17,12 +21,12 @@ class Api::V1::Accounts::Integrations::OpenaiController < Api::V1::Accounts::Bas
 
     # Faz a requisição direta com Net::HTTP (evita depender de gems terceiras)
     uri = URI.parse(models_url)
-    http = Net::HTTP.new(uri.host, uri.port)
+    http = ::Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = (uri.scheme == 'https')
     http.open_timeout = 10
     http.read_timeout = 15
 
-    request = Net::HTTP::Get.new(uri.request_uri)
+    request = ::Net::HTTP::Get.new(uri.request_uri)
     request['Authorization'] = "Bearer #{api_key}"
     request['Content-Type'] = 'application/json'
 
