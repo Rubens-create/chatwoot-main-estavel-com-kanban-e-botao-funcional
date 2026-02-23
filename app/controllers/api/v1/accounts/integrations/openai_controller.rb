@@ -1,38 +1,43 @@
 class Api::V1::Accounts::Integrations::OpenaiController < Api::V1::Accounts::BaseController
-  before_action :check_authorization
+  skip_after_action :verify_authorized
 
   def models
     api_key = params[:api_key]
-    api_base_url = params[:api_base_url].presence
+    api_base_url = params[:api_base_url].presence || 'https://api.openai.com/v1'
 
     unless api_key.present?
       render json: { error: 'API key is missing' }, status: :unprocessable_entity
       return
     end
 
-    api_base_url_to_use = api_base_url.presence || InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    api_base_url_to_use = "#{api_base_url_to_use.chomp('/')}/v1" unless api_base_url_to_use.to_s.end_with?('/v1')
+    # Normaliza a URL base
+    api_base_url = api_base_url.chomp('/')
+    api_base_url = "#{api_base_url}/v1" unless api_base_url.end_with?('/v1')
+    models_url = "#{api_base_url}/models"
 
-    models_list = []
-    client = ::OpenAI::Client.new(
-      access_token: api_key,
-      uri_base: api_base_url_to_use
-    )
-    response = client.models.list
+    # Faz a requisição direta com Net::HTTP (evita depender de gems terceiras)
+    uri = URI.parse(models_url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = (uri.scheme == 'https')
+    http.open_timeout = 10
+    http.read_timeout = 15
 
-    if response && response['data']
-      models_list = response['data'].map { |m| m['id'] }.compact.sort
+    request = Net::HTTP::Get.new(uri.request_uri)
+    request['Authorization'] = "Bearer #{api_key}"
+    request['Content-Type'] = 'application/json'
+
+    response = http.request(request)
+
+    if response.code.to_i == 200
+      body = JSON.parse(response.body)
+      models_list = (body['data'] || []).map { |m| m['id'] }.compact.sort
+      render json: { models: models_list }
+    else
+      error_body = JSON.parse(response.body) rescue { 'error' => response.body }
+      render json: { error: error_body['error'] || "HTTP #{response.code}" }, status: :unprocessable_entity
     end
-
-    render json: { models: models_list }
   rescue StandardError => e
     Rails.logger.error "Error fetching models: #{e.message}"
     render json: { error: e.message }, status: :unprocessable_entity
-  end
-
-  private
-
-  def check_authorization
-    authorize(:hook)
   end
 end
