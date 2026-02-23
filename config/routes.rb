@@ -334,6 +334,11 @@ Rails.application.routes.draw do
                 delete :destroy
               end
             end
+            resource :openai, controller: 'openai', only: [] do
+              collection do
+                post :models
+              end
+            end
           end
           resources :working_hours, only: [:update]
 

@@ -82,9 +82,9 @@ class Integrations::LlmBaseService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
+    endpoint = hook.settings['api_base_url'].presence || InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
     endpoint = endpoint.chomp('/')
-    "#{endpoint}/v1"
+    endpoint.end_with?('/v1') ? endpoint : "#{endpoint}/v1"
   end
 
   def make_api_call(body)
@@ -98,10 +98,12 @@ class Integrations::LlmBaseService
 
   def execute_ruby_llm_request(parsed_body)
     messages = parsed_body['messages']
-    model = parsed_body['model']
-
+    
+    # Utiliza o modelo configurado no hook ou faz fallback o modelo solicitado / padrao
+    configured_model = hook.settings['model_name'].presence || parsed_body['model'] || GPT_MODEL
+    
     Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
-      chat = context.chat(model: model)
+      chat = context.chat(model: configured_model)
       setup_chat_with_messages(chat, messages)
     end
   rescue StandardError => e
