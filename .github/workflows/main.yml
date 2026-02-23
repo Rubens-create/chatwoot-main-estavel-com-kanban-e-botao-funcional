@@ -45,8 +45,11 @@ jobs:
           tags: |
             ghcr.io/${{ steps.repo.outputs.name }}:latest
             ghcr.io/${{ steps.repo.outputs.name }}:${{ github.sha }}
-          cache-from: type=gha
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/${{ steps.repo.outputs.name }}:latest
           cache-to: type=gha,mode=max
           build-args: |
             RAILS_ENV=production
             NODE_ENV=production
+

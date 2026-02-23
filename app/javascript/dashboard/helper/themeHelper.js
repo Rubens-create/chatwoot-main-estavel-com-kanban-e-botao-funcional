@@ -100,7 +100,6 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
   const palette = generatePalette(hex);
   const root = document.documentElement;
 
-  // We are persisting in the system DOM as standard properties
   root.style.setProperty('--color-woot', palette.primary);
   root.style.setProperty('--color-primary', palette.primary);
   root.style.setProperty('--w-text-on-primary', palette.textOnPrimary);
@@ -111,7 +110,44 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     }
   });
 
-  // Create a high-specificity style tag to override any nested theme configurations like [data-theme]
+  // Parse hex to RGB components
+  let cleanHex = hex.replace('#', '');
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split('').map(c => c + c).join('');
+  }
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  // Generate light tint for --solid-blue (like original #daecff = very light blue)
+  // Mix the color with white at ~85% to get a subtle background
+  const solidR = Math.round(r + (255 - r) * 0.85);
+  const solidG = Math.round(g + (255 - g) * 0.85);
+  const solidB = Math.round(b + (255 - b) * 0.85);
+
+  // Generate dark tint for --solid-blue in dark mode (like original 16 49 91)
+  // Mix the color with black at ~65% to get a deep shade
+  const solidDarkR = Math.round(r * 0.35);
+  const solidDarkG = Math.round(g * 0.35);
+  const solidDarkB = Math.round(b * 0.35);
+
+  // --text-blue: the readable brand text color (like original 8 109 224)
+  // For light mode, darken slightly for readability
+  const textR = Math.round(r * 0.8);
+  const textG = Math.round(g * 0.8);
+  const textB = Math.round(b * 0.8);
+
+  // For dark mode text, lighten for readability (like original 126 182 255)
+  const textDarkR = Math.round(r + (255 - r) * 0.5);
+  const textDarkG = Math.round(g + (255 - g) * 0.5);
+  const textDarkB = Math.round(b + (255 - b) * 0.5);
+
+  // --border-blue: border accent
+  const borderR = Math.round(r + (255 - r) * 0.6);
+  const borderG = Math.round(g + (255 - g) * 0.6);
+  const borderB = Math.round(b + (255 - b) * 0.6);
+
+  // Create high-specificity style tag to override theme configurations
   let styleEl = document.getElementById('custom-theme-colors');
   if (!styleEl) {
     styleEl = document.createElement('style');
@@ -119,23 +155,10 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
     document.head.appendChild(styleEl);
   }
 
-  // Calculate RGB values for rgba() override injections with safety checks
-  let cleanHex = hex ? String(hex).replace('#', '') : '1F93FF'; // Default to Woot Blue
-  if (cleanHex.length === 3) {
-    cleanHex = cleanHex.split('').map(char => char + char).join('');
-  }
-  const r = parseInt(cleanHex.substring(0, 2), 16) || 31;
-  const g = parseInt(cleanHex.substring(2, 4), 16) || 147;
-  const b = parseInt(cleanHex.substring(4, 6), 16) || 255;
-  const rgbValue = `${r}, ${g}, ${b}`;
-
   styleEl.textContent = `
     :root,
     :root[data-theme="light"],
-    :root[data-theme="dark"],
     [data-theme="light"],
-    [data-theme="dark"],
-    .dark,
     .light {
       --w-25: ${palette[25]} !important;
       --w-50: ${palette[50]} !important;
@@ -152,31 +175,36 @@ export const applyThemeColor = (hex, saveToLocal = true) => {
       --color-woot: ${palette.primary} !important;
       --color-primary: ${palette.primary} !important;
       --w-text-on-primary: ${palette.textOnPrimary} !important;
+      --solid-blue: ${solidR} ${solidG} ${solidB} !important;
+      --text-blue: ${textR} ${textG} ${textB} !important;
+      --border-blue: ${borderR} ${borderG} ${borderB} !important;
     }
-
-    /* Message Bubbles */
-    .bg-n-solid-blue {
-      background-color: rgb(${rgbValue}) !important;
-      color: #ffffff !important;
-    }
-
-    /* Active Links / Text */
-    .text-n-blue-text, .text-woot-500 {
-      color: rgb(${rgbValue}) !important;
-    }
-
-    /* Active Menu Backgrounds */
-    .bg-n-alpha-1, .bg-n-alpha-2, .bg-n-solid-blue\\/10 {
-      background-color: rgba(${rgbValue}, 0.1) !important;
+    :root[data-theme="dark"],
+    [data-theme="dark"],
+    .dark {
+      --w-25: ${palette[25]} !important;
+      --w-50: ${palette[50]} !important;
+      --w-75: ${palette[75]} !important;
+      --w-100: ${palette[100]} !important;
+      --w-200: ${palette[200]} !important;
+      --w-300: ${palette[300]} !important;
+      --w-400: ${palette[400]} !important;
+      --w-500: ${palette[500]} !important;
+      --w-600: ${palette[600]} !important;
+      --w-700: ${palette[700]} !important;
+      --w-800: ${palette[800]} !important;
+      --w-900: ${palette[900]} !important;
+      --color-woot: ${palette.primary} !important;
+      --color-primary: ${palette.primary} !important;
+      --w-text-on-primary: ${palette.textOnPrimary} !important;
+      --solid-blue: ${solidDarkR} ${solidDarkG} ${solidDarkB} !important;
+      --text-blue: ${textDarkR} ${textDarkG} ${textDarkB} !important;
+      --border-blue: ${borderR} ${borderG} ${borderB} !important;
     }
   `;
-
-  console.log('[THEME/DEBUG] Injected Style Element:', styleEl.textContent);
-  setTimeout(() => {
-    console.log('[THEME/DEBUG] Computed --w-500 exists:', getComputedStyle(document.documentElement).getPropertyValue('--w-500'));
-  }, 500);
 
   if (saveToLocal) {
     localStorage.setItem('chatwoot_theme_color', palette.primary);
   }
 };
+
