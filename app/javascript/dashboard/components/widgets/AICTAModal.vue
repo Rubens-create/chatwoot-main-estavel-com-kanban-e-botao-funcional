@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import { useAlert } from 'dashboard/composables';
@@ -7,13 +8,11 @@ import { useAI } from 'dashboard/composables/useAI';
 import { OPEN_AI_EVENTS } from 'dashboard/helper/AnalyticsHelper/events';
 
 import NextButton from 'dashboard/components-next/button/Button.vue';
-import globalConfigMixin from 'shared/mixins/globalConfigMixin';
 
 export default {
   components: {
     NextButton,
   },
-  mixins: [globalConfigMixin],
   emits: ['close'],
 
   setup() {
@@ -31,6 +30,11 @@ export default {
       availableModels: [],
       isFetchingModels: false,
     };
+  },
+  computed: {
+    ...mapGetters({
+      accountId: 'getCurrentAccountId',
+    }),
   },
   validations: {
     value: {
@@ -60,7 +64,7 @@ export default {
 
     async fetchModels() {
       if (!this.value || !this.apiBaseUrl) {
-        useAlert(this.$t('INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.KEY_PLACEHOLDER') || 'API Key and API Base URL are required');
+        useAlert('API Key and API Base URL are required');
         return;
       }
       this.isFetchingModels = true;
@@ -129,7 +133,7 @@ export default {
       @submit.prevent="finishOpenAI"
     >
       <div class="w-full mt-2">
-        <label>API Key</label>
+        <label class="block text-sm font-medium mb-1">API Key</label>
         <woot-input
           v-model="value"
           type="text"
@@ -142,7 +146,7 @@ export default {
       </div>
 
       <div class="w-full mt-2">
-        <label>API Base URL</label>
+        <label class="block text-sm font-medium mb-1">API Base URL</label>
         <div class="flex gap-2">
           <woot-input
             v-model="apiBaseUrl"
@@ -155,7 +159,7 @@ export default {
           <NextButton
             type="button"
             :disabled="!value || !apiBaseUrl || isFetchingModels"
-            label="Load Models"
+            :label="isFetchingModels ? 'Loading...' : 'Load Models'"
             class="!mt-1"
             @click.prevent="fetchModels"
           />
@@ -163,13 +167,17 @@ export default {
       </div>
 
       <div class="w-full mt-2">
-        <label>Model Name</label>
+        <label class="block text-sm font-medium mb-1">Model Name</label>
         <select
           v-if="availableModels.length > 0"
           v-model="modelName"
-          class="w-full form-input"
+          class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
         >
-          <option v-for="model in availableModels" :key="model" :value="model">
+          <option
+            v-for="model in availableModels"
+            :key="model"
+            :value="model"
+          >
             {{ model }}
           </option>
         </select>
@@ -205,8 +213,14 @@ export default {
           />
           <NextButton
             type="submit"
-            :disabled="v$.value.$invalid || v$.apiBaseUrl.$invalid || v$.modelName.$invalid"
-            :label="$t('INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.BUTTONS.FINISH')"
+            :disabled="
+              v$.value.$invalid ||
+              v$.apiBaseUrl.$invalid ||
+              v$.modelName.$invalid
+            "
+            :label="
+              $t('INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.BUTTONS.FINISH')
+            "
           />
         </div>
       </div>
