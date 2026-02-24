@@ -33,6 +33,8 @@ export default {
       endPoint: '',
       alertMessage: '',
       values: {},
+      isFetchingModels: false,
+      availableModels: [],
     };
   },
   computed: {
@@ -111,6 +113,33 @@ export default {
         useAlert(this.alertMessage);
       }
     },
+    async fetchOpenAIModels() {
+      if (!this.values.api_key || !this.values.api_base_url) {
+        useAlert('API Key and API Base URL are required');
+        return;
+      }
+      this.isFetchingModels = true;
+      try {
+        const payload = {
+          api_key: this.values.api_key,
+          api_base_url: this.values.api_base_url,
+        };
+        const response = await window.axios.post(
+          `/api/v1/accounts/${this.$store.getters.getCurrentAccountId}/integrations/openai/models`,
+          payload
+        );
+        this.availableModels = response.data.models || [];
+        if (this.availableModels.length > 0) {
+          useAlert(this.$t('INTEGRATION_SETTINGS.OPEN_AI.MODELS_FETCHED') || 'Modelos listados logo abaixo. Copie e cole no campo.');
+        } else {
+          useAlert('Nenhum modelo encontrado.');
+        }
+      } catch (error) {
+        useAlert(error.response?.data?.error || 'Failed to fetch models');
+      } finally {
+        this.isFetchingModels = false;
+      }
+    },
   },
 };
 </script>
@@ -144,6 +173,27 @@ export default {
         validation="required"
         validation-name="Inbox"
       />
+      <!-- Botão Custom para Integração OpenAI (Resgatar e Exibir Modelos) -->
+      <div v-if="integration.id === 'openai'" class="w-full flex flex-col gap-2 p-3 bg-n-alpha-1 border border-n-weak rounded-md">
+        <NextButton
+          faded
+          ruby
+          icon="i-lucide-download-cloud"
+          :is-loading="isFetchingModels"
+          :label="$t('INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.LOAD_MODELS_BUTTON') || 'Carregar Modelos da URL'"
+          @click.prevent="fetchOpenAIModels"
+        />
+        <div v-if="availableModels.length">
+          <label class="text-n-slate-11 text-xs">Modelos disponíveis:</label>
+          <div class="flex flex-wrap gap-1 mt-1 max-h-32 overflow-y-auto">
+            <span v-for="mod in availableModels" :key="mod" @click="values.model_name = mod" class="cursor-pointer bg-n-slate-3 hover:bg-n-slate-4 px-2 py-0.5 rounded text-xs">
+              {{ mod }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- End of OpenAI Custom UI -->
+
       <div class="flex flex-row justify-end w-full gap-2 px-0 py-2">
         <NextButton
           faded
