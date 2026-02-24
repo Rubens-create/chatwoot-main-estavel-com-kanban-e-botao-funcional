@@ -127,6 +127,7 @@ export default {
       newConversationModalActive: false,
       showArticleSearchPopover: false,
       showScheduledMessageModal: false,
+      isSummarizing: false,
     };
   },
   computed: {
@@ -1132,6 +1133,25 @@ export default {
     togglePopout() {
       this.$emit('update:popOutReplyBox', !this.popOutReplyBox);
     },
+    async onSummarizeClick() {
+      if (this.isSummarizing) return;
+      this.isSummarizing = true;
+      try {
+        const response = await window.axios.post(
+          `/api/v1/accounts/${this.accountId}/conversations/${this.conversationId}/copilot/summarize`
+        );
+        const summary = response.data.summary;
+        if (summary) {
+          // Acrescenta o resumo ao texto atual, ou substitui
+          this.message = this.message ? `${this.message}\n\n${summary}` : summary;
+          useAlert(this.$t('CONVERSATION.REPLYBOX.COPIOT.SUMMARY_SUCCESS') || 'Conversa resumida com sucesso');
+        }
+      } catch (error) {
+        useAlert(error?.response?.data?.error || 'Não foi possível resumir a conversa.');
+      } finally {
+        this.isSummarizing = false;
+      }
+    },
   },
 };
 </script>
@@ -1147,6 +1167,7 @@ export default {
       :popout-reply-box="popOutReplyBox"
       @set-reply-mode="setReplyMode"
       @toggle-popout="togglePopout"
+      @summarize="onSummarizeClick"
     />
     <ArticleSearchPopover
       v-if="showArticleSearchPopover && connectedPortalSlug"

@@ -28,7 +28,7 @@ export default {
       default: () => 0,
     },
   },
-  emits: ['setReplyMode', 'togglePopout'],
+  emits: ['setReplyMode', 'togglePopout', 'summarize'],
   setup(props, { emit }) {
     const setReplyMode = mode => {
       emit('setReplyMode', mode);
@@ -104,11 +104,22 @@ export default {
         </span>
       </div>
     </div>
-    <NextButton
-      ghost
-      class="ltr:rounded-bl-md rtl:rounded-br-md ltr:rounded-br-none rtl:rounded-bl-none ltr:rounded-tl-none rtl:rounded-tr-none text-n-slate-11 ltr:rounded-tr-[11px] rtl:rounded-tl-[11px]"
-      icon="i-lucide-maximize-2"
-      @click="$emit('togglePopout')"
-    />
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <button
+          class="text-n-violet-9 hover:enabled:!bg-n-violet-3 inline-flex items-center min-w-0 gap-2 transition-all duration-100 ease-out border-0 rounded-lg outline-1 outline disabled:opacity-50 text-n-blue-11 hover:enabled:bg-n-alpha-2 focus-visible:bg-n-alpha-2 outline-transparent h-8 w-8 px-0 text-sm active:enabled:scale-[0.97] justify-center"
+          title="Summarize Conversation"
+          @click="$emit('summarize')"
+        >
+          <span class="i-ph-sparkle-fill flex-shrink-0"></span>
+        </button>
+      </div>
+      <NextButton
+        ghost
+        class="ltr:rounded-bl-md rtl:rounded-br-md ltr:rounded-br-none rtl:rounded-bl-none ltr:rounded-tl-none rtl:rounded-tr-none text-n-slate-11 ltr:rounded-tr-[11px] rtl:rounded-tl-[11px]"
+        icon="i-lucide-maximize-2"
+        @click="$emit('togglePopout')"
+      />
+    </div>
   </div>
 </template>
