@@ -1,5 +1,4 @@
 class Api::V1::Accounts::Conversations::CopilotController < Api::V1::Accounts::Conversations::BaseController
-  skip_after_action :verify_authorized
 
   def summarize
     # Tenta achar a configuração salva da integração openai ativa na conta
