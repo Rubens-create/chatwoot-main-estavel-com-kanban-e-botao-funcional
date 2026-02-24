@@ -51,13 +51,25 @@ openai:
         'validation': 'required',
       },
       {
+        'label': 'API Base URL',
+        'type': 'text',
+        'name': 'api_base_url',
+        'validation': '',
+      },
+      {
+        'label': 'Model Name',
+        'type': 'text',
+        'name': 'model_name',
+        'validation': '',
+      },
+      {
         'label': 'Show label suggestions',
         'type': 'checkbox',
         'name': 'label_suggestion',
         'validation': '',
       },
     ]
-  visible_properties: ['api_key', 'label_suggestion']
+  visible_properties: ['api_key', 'api_base_url', 'model_name', 'label_suggestion']
 linear:
   id: linear
   logo: linear.png
