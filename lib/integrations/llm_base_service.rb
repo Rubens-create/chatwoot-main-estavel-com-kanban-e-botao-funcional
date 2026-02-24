@@ -100,7 +100,9 @@ class Integrations::LlmBaseService
     messages = parsed_body['messages']
     
     # Utiliza o modelo configurado no hook ou faz fallback o modelo solicitado / padrao
+    # Remove prefixo de provider se houver (ex: "groq/compound-mini" -> "compound-mini")
     configured_model = hook.settings['model_name'].presence || parsed_body['model'] || GPT_MODEL
+    configured_model = configured_model.split('/').last if configured_model.include?('/')
     
     Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
       chat = context.chat(model: configured_model)

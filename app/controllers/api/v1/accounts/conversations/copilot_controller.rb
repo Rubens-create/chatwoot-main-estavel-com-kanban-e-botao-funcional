@@ -36,11 +36,14 @@ class Api::V1::Accounts::Conversations::CopilotController < Api::V1::Accounts::C
     service = Integrations::LlmBaseService.new(hook: hook, event: { 'name' => 'summarize', 'data' => { 'conversation_display_id' => @conversation.display_id } })
     
     begin
-      response = service.execute_ruby_llm_request(payload)
-      if response.is_a?(Hash) && response[:error].present?
+      response = service.send(:make_api_call, payload.to_json)
+      if response.nil?
+        render json: { error: 'Não foi possível gerar o resumo.' }, status: :unprocessable_entity
+      elsif response.is_a?(Hash) && response[:error].present?
         render json: { error: response[:error] }, status: :unprocessable_entity
       else
-        render json: { summary: response[:message] || response['message'] }
+        summary_text = response.is_a?(Hash) ? (response[:message] || response['message']) : response.to_s
+        render json: { summary: summary_text }
       end
     rescue StandardError => e
       Rails.logger.error "Erro no Copilot Summarize: #{e.message}"
