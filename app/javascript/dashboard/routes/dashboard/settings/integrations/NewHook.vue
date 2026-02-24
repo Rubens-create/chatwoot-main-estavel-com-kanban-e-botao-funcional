@@ -180,7 +180,7 @@ export default {
           ruby
           icon="i-lucide-download-cloud"
           :is-loading="isFetchingModels"
-          :label="$t('INTEGRATION_SETTINGS.OPEN_AI.CTA_MODAL.LOAD_MODELS_BUTTON') || 'Carregar Modelos da URL'"
+          label="Carregar Modelos da URL"
           @click.prevent="fetchOpenAIModels"
         />
         <div v-if="availableModels.length">

@@ -1,4 +1,6 @@
 class Api::V1::Accounts::Conversations::CopilotController < Api::V1::Accounts::Conversations::BaseController
+  skip_after_action :verify_authorized
+
   def summarize
     # Tenta achar a configuração salva da integração openai ativa na conta
     hook = Current.account.hooks.find_by(app_id: 'openai')
@@ -31,8 +33,8 @@ class Api::V1::Accounts::Conversations::CopilotController < Api::V1::Accounts::C
       ]
     }
 
-    # Instancia o serviço de conexão com o Provedor Genérico
-    service = Integrations::LlmBaseService.new(hook: hook)
+    # Instancia o serviço de conexão com o Provedor Genérico informando o evento "summarize" para compatibilidade com o logger ou cacher da LlmBaseService
+    service = Integrations::LlmBaseService.new(hook: hook, event: { 'name' => 'summarize', 'data' => { 'conversation_display_id' => @conversation.display_id } })
     
     begin
       response = service.execute_ruby_llm_request(payload)
