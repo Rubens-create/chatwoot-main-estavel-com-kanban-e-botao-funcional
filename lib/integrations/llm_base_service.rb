@@ -100,17 +100,65 @@ class Integrations::LlmBaseService
     messages = parsed_body['messages']
     
     # Utiliza o modelo configurado no hook ou faz fallback o modelo solicitado / padrao
-    # Remove prefixo de provider se houver (ex: "groq/compound-mini" -> "compound-mini")
     configured_model = hook.settings['model_name'].presence || parsed_body['model'] || GPT_MODEL
+    # Remove prefixo de provider se houver (ex: "groq/compound-mini" -> "compound-mini")
     configured_model = configured_model.split('/').last if configured_model.include?('/')
-    
-    Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
-      chat = context.chat(model: configured_model)
-      setup_chat_with_messages(chat, messages)
+
+    # Se há uma URL customizada (não é api.openai.com), usar chamada HTTP direta
+    # para evitar a validação de modelos da gem RubyLLM
+    custom_url = hook.settings['api_base_url'].presence
+    if custom_url.present?
+      execute_direct_http_request(configured_model, messages)
+    else
+      Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
+        chat = context.chat(model: configured_model)
+        setup_chat_with_messages(chat, messages)
+      end
     end
   rescue StandardError => e
     ChatwootExceptionTracker.new(e, account: hook.account).capture_exception
     build_error_response_from_exception(e, messages)
+  end
+
+  # Chamada direta via Net::HTTP para provedores OpenAI-compatible (Groq, Maritaca, Ollama, etc.)
+  def execute_direct_http_request(model, messages)
+    require 'net/http'
+    require 'uri'
+    require 'json'
+
+    chat_url = "#{api_base}/chat/completions"
+    uri = URI.parse(chat_url)
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = (uri.scheme == 'https')
+    http.open_timeout = 30
+    http.read_timeout = 60
+
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request['Authorization'] = "Bearer #{hook.settings['api_key']}"
+    request['Content-Type'] = 'application/json'
+
+    body = {
+      model: model,
+      messages: messages
+    }
+
+    request.body = body.to_json
+    response = http.request(request)
+
+    if response.code.to_i == 200
+      parsed = JSON.parse(response.body)
+      content = parsed.dig('choices', 0, 'message', 'content') || ''
+      {
+        message: content,
+        usage: parsed['usage'] || {},
+        request_messages: messages
+      }
+    else
+      error_body = JSON.parse(response.body) rescue { 'error' => response.body }
+      error_msg = error_body.dig('error', 'message') || error_body['error'] || "HTTP #{response.code}"
+      { error: error_msg, request_messages: messages }
+    end
   end
 
   def setup_chat_with_messages(chat, messages)
