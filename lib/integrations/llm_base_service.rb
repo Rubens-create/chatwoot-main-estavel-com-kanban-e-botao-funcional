@@ -101,8 +101,8 @@ class Integrations::LlmBaseService
     
     # Utiliza o modelo configurado no hook ou faz fallback o modelo solicitado / padrao
     configured_model = hook.settings['model_name'].presence || parsed_body['model'] || GPT_MODEL
-    # Remove prefixo de provider se houver (ex: "groq/compound-mini" -> "compound-mini")
-    configured_model = configured_model.split('/').last if configured_model.include?('/')
+    # Limpa prefixos de provedores que algumas listagens retornam (ex: groq/llama3 -> llama3)
+    configured_model = configured_model.split('/').last if configured_model.to_s.include?('/')
 
     # Se há uma URL customizada (não é api.openai.com), usar chamada HTTP direta
     # para evitar a validação de modelos da gem RubyLLM
